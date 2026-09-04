@@ -1,0 +1,33 @@
+[project]
+name = "omp-net-mcp"
+version = "0.1.0"
+description = "Local-only MCP server reporting network interface configuration and stats."
+requires-python = ">=3.11"
+dependencies = [
+    # Code targets the mcp 2.x API (MCPServer, structured_output), which
+    # does not exist in 1.x -- pin the floor, not just a lower bound.
+    "mcp>=2.0",
+    # IFF_NAMES is imported from pyroute2 internals; keep the range tight
+    # so a pyroute2 refactor cannot break imports silently. Linux-only use,
+    # but declared unconditionally (deps resolve for every platform).
+    "pyroute2>=0.9.6,<0.10",
+    # macOS backend reads kernel tables (flags/MTU/MAC/counters) through
+    # psutil's maintained BSD ABI bindings; hand-rolled ctypes proved fragile
+    # (see netinfo/darwin.py). Never imported on Linux -- module dispatch.
+    "psutil>=7.0",
+]
+
+[project.scripts]
+omp-net-mcp = "server:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["server.py", "netinfo"]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.16",
+]
