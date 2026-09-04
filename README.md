@@ -67,6 +67,38 @@ directly (no MCP client needed):
 uv run python -c "import netinfo, json; print(json.dumps([i.__dict__ for i in netinfo.list_interfaces()], indent=2))"
 ```
 
+
+## Test with MCP Inspector
+
+The official [MCP Inspector](https://github.com/modelcontextprotocol/inspector)
+is a browser UI for exercising an MCP server over stdio. It runs as an npx
+package — no install needed:
+
+```sh
+npx @modelcontextprotocol/inspector
+```
+
+This will start a local web UI (printed to the terminal) and open in the browser.
+In the left panel, switch the transport to **stdio** and start the server with:
+
+```sh
+uv run omp-net-mcp
+```
+
+You can also do this and save some steps:
+
+```sh
+npx @modelcontextprotocol/inspector uv run python server.py
+```
+
+with the project root as the working directory. Then use the right panel to list
+the tools and call them (`list_interfaces`, `get_interface`,
+`get_interface_statistics`, `get_default_routes`) and inspect the structured
+output.
+
+> Requires Node.js (for `npx`). The inspector launches the stdio server itself
+> from the command you give it, so it is independent of any MCP client config.
+
 ## Wiring into an MCP client
 
 Point your MCP client's server command at `uv run omp-net-mcp` with the project
