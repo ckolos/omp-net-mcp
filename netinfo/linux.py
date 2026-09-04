@@ -75,8 +75,11 @@ class InterfaceStats:
 
 
 def _decode_flags(flag_bits: int) -> list[str]:
-    # IFF_NAMES maps "IFF_UP" -> bit; strip the prefix for readability
-    # (the consumer is an LLM, and "UP" is more natural than "IFF_UP").
+    """Decode a raw IFF_* bitmask into readable flag names.
+
+    IFF_NAMES maps "IFF_UP" -> bit; strip the prefix for readability (the
+    consumer is an LLM, and "UP" is more natural than "IFF_UP").
+    """
     return [name[4:] for name, bit in IFF_NAMES.items() if flag_bits & bit]
 
 
@@ -100,11 +103,15 @@ def _decode_link(link) -> Interface:
 
 
 def list_interfaces() -> list[Interface]:
+    """Return a normalized list of all kernel-visible interfaces.
+
+    A single malformed link message never hides the interfaces that parsed
+    fine -- it is skipped, so the caller gets a slightly short list, never a
+    crash.
+    """
     with IPRoute() as ip:
         links = ip.get_links()
 
-    # One malformed message should not hide the interfaces that parsed
-    # fine; skip it (the caller gets a slightly short list, never a crash).
     interfaces = []
     for link in links:
         try:

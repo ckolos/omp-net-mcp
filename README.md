@@ -49,7 +49,8 @@ uv sync
 ```
 
 `uv` creates a `.venv`, installs `mcp`, `pyroute2`, and `psutil` (psutil is only
-imported on macOS), and exposes the `omp-net-mcp` console command.
+imported on macOS), plus the `ruff` dev dependency, and exposes the
+`omp-net-mcp` console command.
 
 ## Run / smoke
 
@@ -97,6 +98,30 @@ Generic stdio client — a config entry like:
 - Lint / format: `uv run ruff check .` and `uv run ruff format .` (ruff is a dev
   dependency).
 - `uv run ruff format .` may reformat; re-read files after running it.
+
+> **Type checking is incomplete — errors are expected.**
+>
+> Zed's Python LSP is [basedpyright](https://basedpyright.com), which is
+> strict-by-default and banners `Any`. It is **not** a declared dependency of
+> this project (see `pyproject.toml` — the dev group is `ruff` only) and has
+> no project configuration, so when the editor type-checks the code it runs
+> unchecked against the checker's defaults.
+>
+> The `netinfo` backends depend on `pyroute2` (Linux) and `psutil` (macOS),
+> neither of which ships type stubs. Under basedpyright their member access
+> resolves to `Unknown`/`Any`, which surfaces a steady stream of
+> `reportUnknown*` warnings, and because the checker bans explicit `Any`, a
+> handful of `reportExplicitAny` / `reportMissingTypeArgument` hits appear in
+> `server.py`'s tool payloads. **These are expected and do not indicate a
+> runtime problem** — the data path is exercised end-to-end against host
+> oracles (see [AGENTS.md](AGENTS.md)).
+>
+> Making the codebase fully type-clean would mean hand-restating the two
+> libraries' internal message shapes as `NamedTuple`s/`cast`s at every
+> boundary — a large block of `Any`-free but hand-maintained type-shape code
+> that must be kept in sync with dependencies we don't control, for zero
+> runtime benefit. That effort was deliberately **not** taken; the warning
+> noise is accepted as the cost of the minimal-dependency design.
 
 ## Layout
 

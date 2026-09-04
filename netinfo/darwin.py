@@ -115,6 +115,7 @@ def _snapshot() -> tuple[dict, dict]:
 
 
 def _build_interface(name: str, index: int, addrs: dict, stats: dict) -> Interface:
+    """Normalize one interface's psutil tables into an Interface."""
     stat = stats[name]
     # psutil emits comma-joined lowercase flag names; uppercase to linux.py's
     # vocabulary. Empty string means "no flags" (e.g. stf0).
@@ -133,17 +134,20 @@ def _build_interface(name: str, index: int, addrs: dict, stats: dict) -> Interfa
 
 
 def list_interfaces() -> list[Interface]:
-    # if_nameindex() is the enumeration source: kernel-authoritative names +
-    # indices, including interfaces psutil has no AF_LINK address for.
+    """Return a normalized list of all kernel-visible interfaces.
+
+    if_nameindex() is the enumeration source: kernel-authoritative names +
+    indices, including interfaces psutil has no AF_LINK address for. A
+    detached/transient interface (awdl0 mid-cycle) can vanish between
+    enumeration and lookup; it is skipped -- the caller gets a slightly short
+    list, never a crash. Mirrors linux.py's rule.
+    """
     addrs, stats = _snapshot()
     interfaces = []
     for index, name in socket.if_nameindex():
         try:
             interfaces.append(_build_interface(name, index, addrs, stats))
         except KeyError:
-            # A detached/transient interface (awdl0 mid-cycle) can vanish
-            # between enumeration and lookup; skip it -- the caller gets a
-            # slightly short list, never a crash. Mirrors linux.py's rule.
             continue
     return interfaces
 
