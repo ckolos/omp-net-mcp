@@ -72,24 +72,26 @@ uv run python -c "import netinfo, json; print(json.dumps([i.__dict__ for i in ne
 Point your MCP client's server command at `uv run omp-net-mcp` with the project
 directory as its working directory.
 
-Claude Desktop — add to `claude_desktop_config.json`:
+Claude Desktop — add to `claude_desktop_config.json` (set `PROJECT_DIR` to the
+checked-out path):
 
 ```json
 {
   "mcpServers": {
     "netinfo": {
       "command": "uv",
-      "args": ["run", "--directory", "/home/ckolos/Source/ckolos-git/omp-net-mcp", "omp-net-mcp"]
+      "args": ["run", "--directory", "PROJECT_DIR", "omp-net-mcp"]
     }
   }
 }
 ```
 
-Generic stdio client — a config entry like:
+Generic stdio client — a config entry like (set `PROJECT_DIR` to the checked-out
+path):
 
 ```json
 {
-  "command": "/home/ckolos/Source/ckolos-git/omp-net-mcp/.venv/bin/omp-net-mcp"
+  "command": "PROJECT_DIR/.venv/bin/omp-net-mcp"
 }
 ```
 
